@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Transformation Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F6F9;
+    --surface:#FFFFFF;
+    --surface-2:#FBFCFD;
+    --ink:#10203A;
+    --muted:#5B6B82;
+    --faint:#8A97A9;
+    --line:#E2E7EE;
+    --line-strong:#CDD5E0;
+    --primary:#2F4BB5;
+    --primary-soft:#EAEEFB;
+    --teal:#11A08A;
+    --teal-soft:#E0F4F0;
+    --amber:#E8903A;
+    --amber-soft:#FBEBD6;
+    --coral:#E5564E;
+    --coral-soft:#FBE6E4;
+    --violet:#6C5CE0;
+    --green:#2FA866;
+    --display:'Archivo',system-ui,sans-serif;
+    --body:'Inter',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --shadow:0 1px 2px rgba(16,32,58,.05), 0 10px 30px -18px rgba(16,32,58,.25);
+    --radius:12px;
+    --sidebar:230px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:var(--display);margin:0;letter-spacing:-.01em}
+  button{font-family:var(--body);cursor:pointer}
+  input,select{font-family:var(--body);font-size:13px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* ---------------- layout ---------------- */
+  .app{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh}
+
+  .side{position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;padding:20px 16px;gap:4px;overflow-y:auto}
+  .side .logo{display:flex;align-items:center;gap:10px;padding:4px 6px 16px}
+  .side .logo svg{width:28px;height:28px;flex:none}
+  .side .logo .t{font-family:var(--display);font-weight:700;font-size:14px;line-height:1.15}
+  .side .logo .s{font-size:11px;color:var(--faint)}
+  .navlabel{font-size:11px;color:var(--faint);font-weight:600;padding:14px 8px 6px;letter-spacing:.02em}
+  .navitem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;background:none;
+    color:var(--muted);font-weight:500;font-size:13.5px;padding:9px 10px;border-radius:9px;transition:background .15s,color .15s}
+  .navitem:hover{background:var(--paper);color:var(--ink)}
+  .navitem[aria-current="true"]{background:var(--primary-soft);color:var(--primary);font-weight:600}
+  .navitem .dot{width:7px;height:7px;border-radius:2px;background:currentColor;opacity:.75}
+  .side .spacer{flex:1}
+  .side .field{padding:6px}
+  .side .field label{display:block;font-size:11px;color:var(--faint);font-weight:600;margin-bottom:5px}
+  .side select.teamsel{width:100%;padding:8px 9px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);color:var(--ink)}
+  .side .actions{display:flex;flex-direction:column;gap:6px;padding:6px;border-top:1px solid var(--line);margin-top:8px}
+
+  .btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+    padding:8px 12px;border-radius:9px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn:hover{border-color:var(--primary);color:var(--primary)}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.primary:hover{background:#263c93;color:#fff}
+  .btn.small{padding:6px 10px;font-size:12px}
+  .btn.ghost{border-color:transparent;background:var(--paper)}
+  .btn.danger:hover{border-color:var(--coral);color:var(--coral)}
+
+  .main{min-width:0;padding:26px 30px 70px;max-width:1180px}
+
+  /* ---------------- top meta ---------------- */
+  .topmeta{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+  .topmeta .org h2{font-size:21px;font-weight:700}
+  .topmeta .org .per{color:var(--muted);font-size:13px;margin-top:3px}
+  .indexbox{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:12px 16px;box-shadow:var(--shadow)}
+  .indexbox .ring{position:relative}
+  .indexbox .ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .indexbox .ring .c .v{font-family:var(--mono);font-weight:600;font-size:19px;line-height:1}
+  .indexbox .ring .c .l{font-size:9px;color:var(--faint)}
+  .indexbox .meta .lab{font-size:12px;color:var(--muted)}
+  .indexbox .meta .stage{font-family:var(--display);font-weight:700;font-size:16px;margin-top:2px}
+  .indexbox .meta .trend{font-size:11.5px;color:var(--green);margin-top:3px;font-weight:500}
+
+  .filterchip{display:inline-flex;align-items:center;gap:8px;background:var(--primary-soft);color:var(--primary);
+    border-radius:999px;padding:6px 8px 6px 13px;font-size:12.5px;font-weight:600;margin-bottom:16px}
+  .filterchip button{border:none;background:var(--primary);color:#fff;width:18px;height:18px;border-radius:50%;
+    font-size:11px;line-height:1;display:grid;place-items:center}
+
+  /* ---------------- stage ladder ---------------- */
+  .ladder{display:flex;gap:6px;margin:0 0 24px}
+  .rung{flex:1;position:relative}
+  .rung .bar{height:7px;border-radius:4px;background:var(--line)}
+  .rung.done .bar{background:var(--primary)}
+  .rung.current .bar{background:var(--primary)}
+  .rung.current .bar{box-shadow:0 0 0 3px var(--primary-soft)}
+  .rung .lab{margin-top:9px;font-size:11.5px;color:var(--muted);font-weight:500}
+  .rung .sub{font-size:10.5px;color:var(--faint);margin-top:1px}
+  .rung.done .lab,.rung.current .lab{color:var(--ink)}
+  .rung.current .lab{font-weight:700}
+  .rung.current::after{content:"now";position:absolute;top:-19px;left:0;font-size:10px;font-weight:700;color:var(--primary);
+    background:var(--primary-soft);padding:2px 7px;border-radius:5px}
+
+  /* ---------------- north star meters ---------------- */
+  .meters{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:10px}
+  .meter{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 15px}
+  .meter .mh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .meter .mname{font-size:12.5px;color:var(--muted);font-weight:500}
+  .meter .mval{font-family:var(--mono);font-weight:600;font-size:26px;line-height:1;margin:10px 0 2px;letter-spacing:-.02em}
+  .meter .mtrack{position:relative;height:8px;background:var(--paper);border:1px solid var(--line);border-radius:6px;margin:12px 0 0;overflow:visible}
+  .meter .mfill{height:100%;border-radius:6px;width:0;transition:width 1.1s cubic-bezier(.2,.75,.25,1)}
+  .meter .mtick{position:absolute;top:-4px;height:16px;width:2px;background:var(--amber);border-radius:2px}
+  .meter .mfoot{display:flex;justify-content:space-between;margin-top:9px;font-size:11px;color:var(--faint)}
+  .meter .mfoot b{font-family:var(--mono);font-weight:500;color:var(--amber)}
+  .meter .mgap{font-family:var(--mono);font-weight:500}
+
+  /* ---------------- sections ---------------- */
+  .page{display:none}
+  .page.active{display:block}
+  .sec{margin-top:30px}
+  .sec-h{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+  .sec-h h3{font-size:15px;font-weight:700}
+  .sec-h .d{font-size:12.5px;color:var(--muted)}
+  .sec-h .rule{flex:1;height:1px;background:var(--line)}
+
+  .grid{display:grid;gap:14px}
+  .c2{grid-template-columns:repeat(2,1fr)}
+  .c3{grid-template-columns:repeat(3,1fr)}
+  .c4{grid-template-columns:repeat(4,1fr)}
+  .c21{grid-template-columns:1.6fr 1fr}
+  .c12{grid-template-columns:1fr 1.6fr}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:17px}
+  .card.raise{box-shadow:var(--shadow)}
+  .card h4{font-size:13.5px;font-weight:700}
+  .card .sub{font-size:11.5px;color:var(--muted);margin-top:2px;margin-bottom:14px}
+
+  .stat .n{font-family:var(--mono);font-weight:600;font-size:27px;letter-spacing:-.02em;line-height:1}
+  .stat .n small{font-size:14px;color:var(--faint);font-weight:500}
+  .stat .cap{font-size:12px;color:var(--muted);margin-top:7px}
+  .stat .chg{font-size:11.5px;margin-top:6px;font-weight:600}
+  .chg.up{color:var(--green)} .chg.down{color:var(--coral)} .chg.flat{color:var(--faint)}
+  .tinynote{font-size:11px;color:var(--faint);margin-top:9px;line-height:1.4}
+
+  /* pillar cards */
+  .pillar{position:relative;overflow:hidden}
+  .pillar .pacc{position:absolute;left:0;top:0;bottom:0;width:4px}
+  .pillar .pt{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+  .pillar .pt .nm{font-family:var(--display);font-weight:700;font-size:15px}
+  .pillar .pt .sc{font-family:var(--mono);font-weight:600;font-size:30px;letter-spacing:-.03em}
+  .pillar .pt .sc small{font-size:13px;color:var(--faint)}
+  .pillar .pr{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-top:1px solid var(--line)}
+  .pillar .pr span:first-child{color:var(--muted)}
+  .pillar .pr span:last-child{font-family:var(--mono)}
+
+  /* bullet rows */
+  .blt{margin:12px 0}
+  .blt.click{cursor:pointer;border-radius:8px;padding:5px;margin:4px -5px;transition:background .15s}
+  .blt.click:hover{background:var(--paper)}
+  .blt .bt{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;margin-bottom:6px}
+  .blt .bn{font-weight:500}
+  .blt .bv{font-family:var(--mono);color:var(--muted);font-size:12px}
+  .blt .bk{position:relative;height:8px;background:var(--paper);border:1px solid var(--line);border-radius:6px;overflow:visible}
+  .blt .bf{height:100%;border-radius:6px;width:0;transition:width 1s cubic-bezier(.2,.75,.25,1)}
+  .blt .bx{position:absolute;top:-4px;height:16px;width:2px;background:var(--amber);border-radius:2px}
+  .blt.dim{opacity:.32}
+
+  /* bars */
+  .bars{display:flex;align-items:flex-end;gap:9px;height:150px;padding-top:20px}
+  .bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;cursor:pointer}
+  .bwrap{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center}
+  .bar{width:60%;max-width:30px;border-radius:5px 5px 2px 2px;height:0;transition:height 1s cubic-bezier(.2,.75,.25,1);position:relative}
+  .bar .bv{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .bx-lab{font-size:10.5px;color:var(--faint);text-align:center;line-height:1.15}
+  .bcol.dim{opacity:.3}
+  .bcol.sel .bx-lab{color:var(--primary);font-weight:700}
+
+  /* donut */
+  .donutwrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .legend{display:flex;flex-direction:column;gap:8px;font-size:12px;min-width:150px}
+  .legend .li{display:flex;align-items:center;gap:9px}
+  .legend .sw{width:11px;height:11px;border-radius:3px;flex:none}
+  .legend .ln{flex:1;color:var(--muted)}
+  .legend .lv{font-family:var(--mono);color:var(--ink)}
+
+  /* tables */
+  .tw{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  thead th{font-family:var(--display);font-weight:600;text-align:left;color:var(--muted);font-size:11.5px;
+    padding:9px 11px;border-bottom:1px solid var(--line-strong);white-space:nowrap}
+  tbody td{padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--surface-2)}
+  td.num,th.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+  .tnm{font-weight:600}
+  .tsub{color:var(--faint);font-size:11px;margin-top:1px}
+
+  .tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .t-live{color:var(--teal);background:var(--teal-soft)}
+  .t-build{color:var(--primary);background:var(--primary-soft)}
+  .t-prio{color:var(--violet);background:#ECE9FB}
+  .t-intake{color:var(--muted);background:var(--paper)}
+  .t-hold{color:var(--amber);background:var(--amber-soft)}
+  .t-low{color:var(--green);background:#E4F4EB}
+  .t-med{color:var(--amber);background:var(--amber-soft)}
+  .t-high{color:var(--coral);background:var(--coral-soft)}
+  .rag{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+  .rag-g{background:var(--green)} .rag-a{background:var(--amber)} .rag-r{background:var(--coral)}
+
+  /* funnel */
+  .funnel .ft{display:flex;align-items:baseline;justify-content:space-between}
+  .funnel .fn{font-family:var(--mono);font-weight:600;font-size:26px}
+  .funnel .fl{font-size:12px;color:var(--muted)}
+  .funnel .fbar{height:6px;border-radius:4px;margin-top:9px}
+
+  /* chips */
+  .chips{display:flex;flex-direction:column;gap:9px}
+  .chips .row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;
+    padding:8px 11px;background:var(--paper);border-radius:8px}
+  .chips .row b{font-family:var(--mono);font-weight:600}
+
+  /* attention */
+  .alist{display:flex;flex-direction:column}
+  .arow{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .arow:last-child{border-bottom:none}
+  .arow .at{font-size:13px;font-weight:600}
+  .arow .ad{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* leaderboard */
+  .lb{display:flex;flex-direction:column}
+  .lbr{display:grid;grid-template-columns:22px 1fr 140px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  .lbr:last-child{border-bottom:none}
+  .lbr .rk{font-family:var(--mono);color:var(--faint);text-align:center;font-size:12px}
+  .lbr .who{font-size:13px;font-weight:600}
+  .lbr .who .wt{font-size:11px;color:var(--faint);font-weight:400}
+  .lbr .mb{height:7px;background:var(--paper);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+  .lbr .mb i{display:block;height:100%;width:0;background:var(--primary);transition:width .9s cubic-bezier(.2,.75,.25,1)}
+  .lbr .ml{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+
+  /* team profile drill-down */
+  .profile{background:linear-gradient(180deg,var(--primary-soft),var(--surface));border:1px solid var(--line-strong);
+    border-radius:var(--radius);padding:18px;margin-bottom:22px;box-shadow:var(--shadow)}
+  .profile .ph{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .profile .ph .nm{font-family:var(--display);font-weight:700;font-size:18px;color:var(--primary)}
+  .profile .pg{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .profile .pm .v{font-family:var(--mono);font-weight:600;font-size:22px;letter-spacing:-.02em}
+  .profile .pm .k{font-size:11px;color:var(--muted);margin-top:3px}
+  .profile .plists{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  .profile .plists h5{font-family:var(--display);font-size:12px;margin:0 0 7px;color:var(--muted)}
+  .profile .plists .it{font-size:12.5px;padding:5px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+
+  /* ---------------- edit mode ---------------- */
+  .editbar{position:sticky;bottom:0;z-index:20;margin:26px -30px -70px;padding:14px 30px;
+    background:var(--surface);border-top:1px solid var(--line-strong);display:flex;align-items:center;gap:12px;
+    box-shadow:0 -10px 30px -22px rgba(16,32,58,.5)}
+  .editbar .msg{font-size:12.5px;color:var(--muted);flex:1}
+  .editbanner{background:var(--amber-soft);border:1px solid var(--amber);color:#8a5713;border-radius:10px;
+    padding:11px 14px;font-size:12.5px;margin-bottom:20px;display:flex;gap:9px;align-items:flex-start}
+  .ecard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+  .ecard > h4{font-size:13.5px;font-weight:700;margin-bottom:3px}
+  .ecard > .sub{font-size:11.5px;color:var(--muted);margin-bottom:13px}
+  .egrid{display:grid;gap:10px 14px}
+  .fld{display:flex;flex-direction:column;gap:4px}
+  .fld label{font-size:11px;color:var(--muted);font-weight:600}
+  .inp{width:100%;padding:7px 9px;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface);color:var(--ink)}
+  .inp:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .etable{width:100%;border-collapse:collapse;font-size:12px}
+  .etable th{text-align:left;font-size:10.5px;color:var(--faint);font-weight:600;padding:4px 6px}
+  .etable td{padding:3px 6px}
+  .etable .inp{padding:6px 7px;font-size:12px}
+  .rowdel{border:1px solid var(--line-strong);background:var(--surface);color:var(--coral);width:26px;height:26px;border-radius:6px;font-size:14px;line-height:1}
+  .rowdel:hover{border-color:var(--coral)}
+  .addrow{margin-top:10px}
+
+  .footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--faint);font-size:11.5px;line-height:1.6}
+  .footer b{color:var(--muted)}
+
+  /* mobile */
+  .menutoggle{display:none}
+  @media(max-width:980px){
+    .meters{grid-template-columns:repeat(2,1fr)}
+    .c3,.c4{grid-template-columns:repeat(2,1fr)}
+    .c21,.c12{grid-template-columns:1fr}
+    .profile .pg{grid-template-columns:repeat(3,1fr)}
+  }
+  @media(max-width:760px){
+    .app{grid-template-columns:1fr}
+    .side{position:fixed;left:0;top:0;bottom:0;width:250px;z-index:50;transform:translateX(-100%);transition:transform .22s}
+    .side.open{transform:none}
+    .main{padding:18px 16px 70px}
+    .menutoggle{display:inline-flex;position:fixed;top:12px;right:12px;z-index:40;background:var(--surface);
+      border:1px solid var(--line-strong);border-radius:9px;padding:9px 11px;box-shadow:var(--shadow)}
+    .meters,.c2{grid-template-columns:1fr}
+    .ladder{flex-wrap:wrap}
+    .rung{flex:1 1 40%}
+    .profile .pg{grid-template-columns:repeat(2,1fr)}
+    .profile .plists{grid-template-columns:1fr}
+    .lbr{grid-template-columns:20px 1fr 110px}
+    .editbar{margin:26px -16px -70px;padding:12px 16px;flex-wrap:wrap}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto}}
+  :focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:5px}
+</style>
+</head>
+<body>
+
+<button class="menutoggle" id="menuToggle" aria-label="Menu">☰</button>
+
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side" id="side">
+    <div class="logo">
+      <svg viewBox="0 0 32 32" fill="none">
+        <rect x="2" y="2" width="28" height="28" rx="8" fill="#2F4BB5"/>
+        <path d="M8 21 L13 13 L18 18 L24 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="24" cy="9" r="2.4" fill="#E8903A"/>
+      </svg>
+      <div>
+        <div class="t">AI Transformation</div>
+        <div class="s">Head of AI</div>
+      </div>
+    </div>
+
+    <div class="navlabel">Pillars</div>
+    <button class="navitem" data-page="overview" aria-current="true"><span class="dot"></span>Overview</button>
+    <button class="navitem" data-page="technology"><span class="dot"></span>Technology</button>
+    <button class="navitem" data-page="process"><span class="dot"></span>Process</button>
+    <button class="navitem" data-page="people"><span class="dot"></span>People</button>
+
+    <div class="spacer"></div>
+
+    <div class="field">
+      <label for="teamSel">Filter by team</label>
+      <select class="teamsel" id="teamSel"></select>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary small" id="editBtn">Edit data</button>
+      <button class="btn small" id="exportBtn">Export JSON</button>
+      <button class="btn small" id="importBtn">Import JSON</button>
+      <button class="btn small" id="bakeBtn">Download with data</button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <div class="topmeta" id="topmeta"></div>
+    <div id="filterWrap"></div>
+    <div class="ladder" id="ladder"></div>
+    <div class="meters" id="meters"></div>
+    <div id="teamProfile"></div>
+
+    <div class="page active" id="page-overview"></div>
+    <div class="page" id="page-technology"></div>
+    <div class="page" id="page-process"></div>
+    <div class="page" id="page-people"></div>
+
+    <div class="footer" id="footer"></div>
+  </main>
+</div>
+
+<script>
+/* capture pristine template for "Download with data" before any DOM mutation */
+const ORIGINAL_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;
+
+/* ============================================================
+   DEFAULT DATA  (sample / illustrative)
+   Edit in the browser with "Edit data" — no need to touch this.
+   ============================================================ */
+const DEFAULT_DATA = {
+  meta:{ org:"Northwind Global", period:"Q2 FY26 · Month 10 of the program", asOf:"25 Jun 2026",
+         index:64, stage:"Scale", meridianPct:52, trend:"+6 points this quarter" },
+  stages:[
+    {name:"Experiment", sub:"pilots & sandboxes"},
+    {name:"Adopt",      sub:"tools in daily use"},
+    {name:"Scale",      sub:"value at scale"},
+    {name:"Embed",      sub:"in the operating model"},
+    {name:"AI-First",   sub:"AI by default"}
+  ],
+  northStar:[
+    {key:"adopt",  label:"Daily active adoption", value:62,  target:80, unit:"%", color:"--teal"},
+    {key:"prof",   label:"Workforce proficient",  value:71,  target:80, unit:"%", color:"--primary"},
+    {key:"champ",  label:"AI Champions",          value:3.8, target:5,  unit:"%", color:"--amber"},
+    {key:"ratio",  label:"Agent : employee",      value:19,  target:33, unit:"",  color:"--violet", display:"1:5.2", targetDisplay:"1:3"}
+  ],
+  pillars:[
+    {name:"Technology", score:72, color:"--primary"},
+    {name:"Process",    score:59, color:"--teal"},
+    {name:"People",     score:61, color:"--amber"}
+  ],
+  roi:{ tracked:11.0, forecast:24.0, live:14, build:9, payback:"7.4 mo" },
+  adoptionTrend:[22,28,31,37,41,44,49,52,55,58,60,62],
+  attention:[
+    {sev:"r", title:"Finance & Legal adoption below 45%", detail:"Two high-value functions lagging. Targeted enablement plus a named exec sponsor needed."},
+    {sev:"a", title:"About $310K/yr in idle licenses", detail:"412 provisioned seats inactive over 30 days. Reclaim or redeploy before renewal."},
+    {sev:"a", title:"Support-triage agent under its ROI forecast", detail:"Tracking $0.9M against $1.6M expected. Check containment rate before scaling."},
+    {sev:"g", title:"Champions program ahead of plan", detail:"12 newly certified this month; on track for 5% by Q4."}
+  ],
+
+  teams:[
+    {id:"eng", name:"Engineering",      licensed:620,  adopting:546, aq:81, trained:86, champions:1, skills:74, agents:12},
+    {id:"prod",name:"Product",          licensed:210,  adopting:166, aq:74, trained:80, champions:0, skills:22, agents:3},
+    {id:"cs",  name:"Customer Support", licensed:880,  adopting:660, aq:69, trained:78, champions:1, skills:41, agents:8},
+    {id:"sales",name:"Sales",          licensed:540,  adopting:356, aq:62, trained:71, champions:1, skills:39, agents:5},
+    {id:"mktg",name:"Marketing",        licensed:240,  adopting:178, aq:66, trained:74, champions:0, skills:26, agents:4},
+    {id:"ops", name:"Operations",       licensed:1100, adopting:638, aq:57, trained:66, champions:1, skills:58, agents:9},
+    {id:"fin", name:"Finance",          licensed:320,  adopting:141, aq:49, trained:58, champions:1, skills:28, agents:4},
+    {id:"hr",  name:"HR",               licensed:180,  adopting:97,  aq:53, trained:62, champions:0, skills:23, agents:2},
+    {id:"legal",name:"Legal",          licensed:120,  adopting:47,  aq:44, trained:50, champions:1, skills:23, agents:1}
+  ],
+
+  licenses:[
+    {name:"Claude Enterprise",        prov:3800, active:2660},
+    {name:"Microsoft 365 Copilot",    prov:1500, active:840},
+    {name:"Coding assistants",        prov:600,  active:498},
+    {name:"Specialty / point tools",  prov:300,  active:160}
+  ],
+  usage:{ dau:62, wau:78, perUser:46, hours:4.6 },
+  skills:{ count:286, note:"Most-used: contract clause extractor, about 1,200 runs/week" },
+  prompts:{ count:1940, note:"61% of active users pulled a shared prompt this month" },
+  agents:{ count:41, note:"1 agent per 5.2 employees — target is 1:3" },
+  dataReadiness:[
+    {name:"Customer / CRM",      v:84},
+    {name:"Product & usage",     v:72},
+    {name:"Finance & billing",   v:61},
+    {name:"HR / workforce",      v:55},
+    {name:"Operations / supply", v:48},
+    {name:"Legal & contracts",   v:33}
+  ],
+  governance:[
+    {k:"Connected data sources", v:"34"},
+    {k:"Domains with an owner", v:"21 / 26"},
+    {k:"Sensitive-data DLP coverage", v:"96%"},
+    {k:"Approved knowledge bases", v:"11"},
+    {k:"Priority-set data freshness", v:"< 24h"},
+    {k:"Open data-quality issues", v:"7"}
+  ],
+
+  funnel:[
+    {name:"Intake",      v:63, color:"--muted"},
+    {name:"Prioritized", v:28, color:"--violet"},
+    {name:"In build",    v:9,  color:"--primary"},
+    {name:"Live",        v:14, color:"--teal"}
+  ],
+  useCases:[
+    {name:"Customer-support triage agent",      owner:"Customer Support", src:"AVP",      stage:"live",  cost:280, exp:1.6, tracked:0.9,  risk:"med",  time:"Live since Q1"},
+    {name:"Contract review & clause extraction", owner:"Legal",            src:"AVP",      stage:"live",  cost:190, exp:2.1, tracked:2.4,  risk:"low",  time:"Live since Q4"},
+    {name:"Sales proposal & RFP drafting",       owner:"Sales",            src:"Internal", stage:"live",  cost:120, exp:1.8, tracked:2.0,  risk:"low",  time:"Live since Q1"},
+    {name:"Invoice & AP exception handling",     owner:"Finance",          src:"AVP",      stage:"live",  cost:210, exp:1.5, tracked:1.3,  risk:"med",  time:"Live since Q2"},
+    {name:"Engineering code-review copilot",      owner:"Engineering",      src:"Internal", stage:"live",  cost:95,  exp:2.4, tracked:2.7,  risk:"low",  time:"Live since Q4"},
+    {name:"Claims adjudication assistant",        owner:"Operations",       src:"AVP",      stage:"build", cost:340, exp:3.2, tracked:null, risk:"high", time:"GA in Q3"},
+    {name:"Knowledge-base assistant, field ops",  owner:"Operations",       src:"AVP",      stage:"build", cost:160, exp:1.2, tracked:null, risk:"med",  time:"Build, Q3"},
+    {name:"HR onboarding & policy concierge",     owner:"HR",               src:"Internal", stage:"build", cost:80,  exp:0.7, tracked:null, risk:"low",  time:"Build, Q3"},
+    {name:"Marketing content & localization",     owner:"Marketing",        src:"Internal", stage:"prio",  cost:110, exp:1.1, tracked:null, risk:"low",  time:"Prioritized"},
+    {name:"Procurement spend analyzer",           owner:"Finance",          src:"AVP",      stage:"prio",  cost:140, exp:1.9, tracked:null, risk:"med",  time:"Prioritized"},
+    {name:"Demand-forecasting agent",             owner:"Operations",       src:"AVP",      stage:"hold",  cost:300, exp:2.8, tracked:null, risk:"high", time:"On hold — data dependency"}
+  ],
+  dataMod:[
+    {name:"Customer 360 lakehouse",       unblocks:"Support triage, forecasting", pct:90,  st:"g", label:"Stabilizing"},
+    {name:"Contract metadata cleanup",    unblocks:"Legal clause extraction",      pct:100, st:"g", label:"Done"},
+    {name:"Supply-chain data unification",unblocks:"Demand-forecasting agent",     pct:35,  st:"r", label:"Behind"},
+    {name:"Finance master-data fix",      unblocks:"Spend analyzer, AP handling",  pct:68,  st:"a", label:"At risk"}
+  ],
+
+  proficiency:[
+    {name:"Advanced / builder", v:18, color:"--teal"},
+    {name:"Proficient",         v:53, color:"--primary"},
+    {name:"Beginner",           v:21, color:"--amber"},
+    {name:"Not yet active",     v:8,  color:"--faint"}
+  ],
+  trainedPct:74,
+  champions:[
+    {name:"Priya Raman",    team:"Engineering",      sessions:14, trained:120, skills:11, agents:4, impact:"Flagship"},
+    {name:"Marcus Bell",    team:"Customer Support", sessions:11, trained:96,  skills:7,  agents:5, impact:"High"},
+    {name:"Dana Okoro",     team:"Sales",            sessions:9,  trained:74,  skills:9,  agents:2, impact:"High"},
+    {name:"Sven Larsson",   team:"Operations",       sessions:8,  trained:88,  skills:6,  agents:3, impact:"High"},
+    {name:"Lucia Ferreira", team:"Finance",          sessions:6,  trained:41,  skills:5,  agents:2, impact:"Growing"},
+    {name:"Tom Whitfield",  team:"Legal",            sessions:5,  trained:33,  skills:4,  agents:1, impact:"Growing"}
+  ]
+};
+
+/* ============================================================
+   STATE & STORAGE
+   ============================================================ */
+const LS_KEY="ai_transformation_dashboard_v2";
+const clone = o => JSON.parse(JSON.stringify(o));
+function decodeSeed(){ try{ if(window.__SEED__) return JSON.parse(decodeURIComponent(escape(atob(window.__SEED__)))); }catch(e){} return null; }
+function loadLS(){ try{ const s=localStorage.getItem(LS_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
+function saveLS(d){ try{ localStorage.setItem(LS_KEY, JSON.stringify(d)); return true; }catch(e){ return false; } }
+
+let DB = loadLS() || decodeSeed() || clone(DEFAULT_DATA);
+let STORAGE_OK = (()=>{ try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return true;}catch(e){ return false; } })();
+let page="overview";
+let activeTeam=null;      // team id or null
+let editing=false;
+let snapshot=null;        // for cancel
+
+/* helpers */
+const $=s=>document.querySelector(s);
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const col=c=>c&&c.startsWith("--")?cssv(c):c;
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const teamById=id=>DB.teams.find(t=>t.id===id);
+const teamByName=n=>DB.teams.find(t=>t.name===n);
+const dau=t=>Math.round(t.adopting/t.licensed*100);
+
+/* get/set by path for edit binding: "meta.org", "teams.2.aq" */
+function getP(p){ return p.split(".").reduce((o,k)=>o==null?o:o[k], DB); }
+function setP(p,val){ const ks=p.split("."); const last=ks.pop(); let o=DB; ks.forEach(k=>o=o[k]); o[last]=val; }
+
+/* ============================================================
+   SVG BUILDERS
+   ============================================================ */
+function ringSVG(pct,size=54){
+  const r=(size-8)/2, c=2*Math.PI*r, off=c*(1-pct/100);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${cssv('--line')}" stroke-width="5"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${cssv('--primary')}" stroke-width="5"
+      stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+      transform="rotate(-90 ${size/2} ${size/2})"/></svg>`;
+}
+function sparkArea(data,w=520,h=96){
+  const pad=8, max=Math.max(...data)*1.1, min=0, step=(w-pad*2)/(data.length-1);
+  const pts=data.map((d,i)=>[pad+i*step, h-pad-((d-min)/(max-min))*(h-pad*2)]);
+  const line=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+  const area=line+` L${pts.at(-1)[0].toFixed(1)} ${h-pad} L${pad} ${h-pad} Z`;
+  const tY=h-pad-((80-min)/(max-min))*(h-pad*2), last=pts.at(-1);
+  return `<svg width="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="spg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="${cssv('--teal')}" stop-opacity=".22"/>
+      <stop offset="1" stop-color="${cssv('--teal')}" stop-opacity="0"/></linearGradient></defs>
+    <line x1="${pad}" y1="${tY.toFixed(1)}" x2="${w-pad}" y2="${tY.toFixed(1)}" stroke="${cssv('--amber')}" stroke-dasharray="4 4" stroke-width="1"/>
+    <text x="${w-pad}" y="${(tY-5).toFixed(1)}" text-anchor="end" font-family="${cssv('--mono')}" font-size="10" fill="${cssv('--amber')}">target 80%</text>
+    <path d="${area}" fill="url(#spg)"/>
+    <path d="${line}" fill="none" stroke="${cssv('--teal')}" stroke-width="2.4" stroke-linejoin="round"/>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3.6" fill="${cssv('--teal')}"/></svg>`;
+}
+function donutSVG(items,total){
+  const S=130,cx=S/2,cy=S/2,r=52,C=2*Math.PI*r; let off=0,segs="";
+  items.forEach(it=>{ const len=it.v/total*C;
+    segs+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col(it.color)}" stroke-width="15"
+      stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}"
+      transform="rotate(-90 ${cx} ${cy})"/>`; off+=len; });
+  return `<svg width="130" height="130" viewBox="0 0 ${S} ${S}">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${cssv('--line')}" stroke-width="15"/>${segs}</svg>`;
+}
+
+/* bullet row */
+function bulletRow(name,pct,valTxt,color,opt={}){
+  const tick = opt.target!=null ? `<div class="bx" style="left:${opt.target}%"></div>`:"";
+  const cls = "blt"+(opt.click?" click":"")+(opt.dim?" dim":"");
+  const click = opt.click?`onclick="selectTeam('${opt.click}')"`:"";
+  return `<div class="${cls}" ${click}>
+    <div class="bt"><span class="bn">${esc(name)}</span><span class="bv">${valTxt}</span></div>
+    <div class="bk"><div class="bf" style="width:0;background:${col(color)}" data-w="${pct}"></div>${tick}</div></div>`;
+}
+function tagFor(stage){return {live:"t-live",build:"t-build",prio:"t-prio",intake:"t-intake",hold:"t-hold"}[stage]||"t-intake";}
+function stageName(s){return {live:"Live",build:"In build",prio:"Prioritized",intake:"Intake",hold:"On hold"}[s]||s;}
+function riskTag(r){return {low:"t-low",med:"t-med",high:"t-high"}[r];}
+
+/* ============================================================
+   VIEW RENDERERS
+   ============================================================ */
+function renderTop(){
+  const m=DB.meta;
+  $("#topmeta").innerHTML=`
+    <div class="org"><h2>${esc(m.org)}</h2><div class="per">${esc(m.period)}</div></div>
+    <div class="indexbox">
+      <div class="ring" style="width:54px;height:54px">${ringSVG(m.index)}
+        <div class="c"><div class="v">${m.index}</div><div class="l">of 100</div></div></div>
+      <div class="meta"><div class="lab">Transformation index</div>
+        <div class="stage">${esc(m.stage)}</div>
+        <div class="trend">${esc(m.trend||"")}</div></div>
+    </div>`;
+  // filter chip
+  $("#filterWrap").innerHTML = activeTeam
+    ? `<span class="filterchip">Team: ${esc(teamById(activeTeam).name)}
+         <button onclick="selectTeam(null)" aria-label="Clear team filter">✕</button></span>` : "";
+}
+function renderLadder(){
+  const m=DB.meta, n=DB.stages.length;
+  $("#ladder").innerHTML=DB.stages.map((s,i)=>{
+    const x=(i/(n-1))*100, done=x<m.meridianPct-6, cur=s.name===m.stage;
+    return `<div class="rung ${done?'done':''} ${cur?'current':''}">
+      <div class="bar"></div><div class="lab">${esc(s.name)}</div><div class="sub">${esc(s.sub)}</div></div>`;
+  }).join("");
+}
+function renderMeters(){
+  $("#meters").innerHTML=DB.northStar.map(ns=>{
+    const max = ns.targetDisplay ? Math.max(ns.value,ns.target)*1.15 : Math.max(ns.target*1.25, ns.value*1.1);
+    const vPct=Math.min(100,ns.value/max*100), tPct=Math.min(100,ns.target/max*100);
+    const disp = ns.display || ns.value+ns.unit;
+    const tdisp = ns.targetDisplay || ns.target+ns.unit;
+    const gap = ns.targetDisplay ? "" :
+      (ns.value>=ns.target ? `<span class="mgap" style="color:${cssv('--green')}">target met</span>`
+        : `<span class="mgap">${(ns.target-ns.value).toFixed(ns.value%1?1:0)}${ns.unit} to target</span>`);
+    return `<div class="meter">
+      <div class="mh"><span class="mname">${esc(ns.label)}</span></div>
+      <div class="mval" style="color:${col(ns.color)}">${disp}</div>
+      <div class="mtrack"><div class="mfill" style="background:${col(ns.color)}" data-w="${vPct}"></div>
+        <div class="mtick" style="left:${tPct}%"></div></div>
+      <div class="mfoot"><span>target <b>${tdisp}</b></span>${gap}</div></div>`;
+  }).join("");
+}
+
+function renderTeamProfile(){
+  const el=$("#teamProfile");
+  if(!activeTeam){ el.innerHTML=""; return; }
+  const t=teamById(activeTeam);
+  const ucs=DB.useCases.filter(u=>u.owner===t.name);
+  const champs=DB.champions.filter(c=>c.team===t.name);
+  el.innerHTML=`<div class="profile">
+    <div class="ph"><div class="nm">${esc(t.name)}</div>
+      <button class="btn small ghost" onclick="selectTeam(null)">Clear</button></div>
+    <div class="pg">
+      <div class="pm"><div class="v">${dau(t)}%</div><div class="k">Daily adoption</div></div>
+      <div class="pm"><div class="v">${t.adopting}/${t.licensed}</div><div class="k">Active / licensed</div></div>
+      <div class="pm"><div class="v">${t.aq}</div><div class="k">SHIFT-AQ</div></div>
+      <div class="pm"><div class="v">${t.trained}%</div><div class="k">Trained</div></div>
+      <div class="pm"><div class="v">${t.skills}</div><div class="k">Skills built</div></div>
+      <div class="pm"><div class="v">${t.agents}</div><div class="k">Agents built</div></div>
+    </div>
+    <div class="plists">
+      <div><h5>Use cases owned (${ucs.length})</h5>${
+        ucs.length? ucs.map(u=>`<div class="it"><span>${esc(u.name)}</span>
+          <span class="tag ${tagFor(u.stage)}">${stageName(u.stage)}</span></div>`).join("")
+          : `<div class="it" style="color:var(--faint)">None recorded yet.</div>`}</div>
+      <div><h5>Champions (${champs.length})</h5>${
+        champs.length? champs.map(c=>`<div class="it"><span>${esc(c.name)}</span>
+          <span class="mono" style="color:var(--muted)">${c.sessions} sessions · ${c.trained} trained</span></div>`).join("")
+          : `<div class="it" style="color:var(--faint)">No champion here yet — recruitment opportunity.</div>`}</div>
+    </div></div>`;
+}
+
+function secH(title,desc){return `<div class="sec-h"><h3>${title}</h3><span class="d">${desc}</span><span class="rule"></span></div>`;}
+
+function renderOverview(){
+  const m=DB.meta, roi=DB.roi, pctCap=Math.round(roi.tracked/roi.forecast*100);
+  const champTotal=DB.teams.reduce((a,t)=>a+t.champions,0);
+  const html=`
+  <div class="sec">${secH("Pillar health","composite score and trajectory")}
+    <div class="grid c3">${DB.pillars.map(p=>`
+      <div class="card pillar"><div class="pacc" style="background:${col(p.color)}"></div>
+        <div class="pt"><span class="nm">${esc(p.name)}</span>
+          <span class="sc" style="color:${col(p.color)}">${p.score}<small>/100</small></span></div>
+        ${pillarRows(p.name)}</div>`).join("")}
+    </div>
+  </div>
+  <div class="sec grid c21">
+    <div class="card"><h4>Daily active adoption</h4>
+      <div class="sub">Share of licensed staff using AI tools daily, trailing 12 months. Target band 80%.</div>
+      ${sparkArea(DB.adoptionTrend)}
+    </div>
+    <div class="card raise stat"><h4 style="margin-bottom:12px">Value realized</h4>
+      <div class="n">$${roi.tracked.toFixed(1)}<small>M tracked</small></div>
+      <div class="cap">against $${roi.forecast.toFixed(1)}M forecast across live use cases</div>
+      ${bulletRow("Forecast captured", pctCap, pctCap+"%", "--teal")}
+      <div class="chips" style="margin-top:12px">
+        <div class="row">Live use cases <b>${roi.live}</b></div>
+        <div class="row">In build <b>${roi.build}</b></div>
+        <div class="row">Average payback <b>${esc(roi.payback)}</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="sec grid c12">
+    <div class="card"><h4>Momentum</h4><div class="sub">change this month</div>
+      <div class="chips">
+        <div class="row">Active users <b style="color:var(--green)">+340</b></div>
+        <div class="row">Custom skills <b style="color:var(--green)">+58</b></div>
+        <div class="row">Agents in production <b style="color:var(--green)">+9</b></div>
+        <div class="row">Champions certified <b style="color:var(--green)">+12</b></div>
+        <div class="row">Shadow-AI incidents <b style="color:var(--green)">−6</b></div>
+      </div></div>
+    <div class="card"><h4>Needs attention</h4><div class="sub">where to lean in this month</div>
+      <div class="alist">${DB.attention.map(a=>`
+        <div class="arow"><span class="rag rag-${a.sev}" style="margin-top:4px"></span>
+          <div><div class="at">${esc(a.title)}</div><div class="ad">${esc(a.detail)}</div></div></div>`).join("")}
+      </div></div>
+  </div>`;
+  $("#page-overview").innerHTML=html;
+}
+function pillarRows(name){
+  if(name==="Technology"){const seats=DB.licenses.reduce((a,l)=>a+l.prov,0),act=DB.licenses.reduce((a,l)=>a+l.active,0);
+    return `<div class="pr"><span>Seats active</span><span>${Math.round(act/seats*100)}%</span></div>
+      <div class="pr"><span>Agents in production</span><span>${DB.agents.count}</span></div>
+      <div class="pr"><span>Data domains ready</span><span>${Math.round(DB.dataReadiness.reduce((a,d)=>a+d.v,0)/DB.dataReadiness.length)}%</span></div>`;}
+  if(name==="Process"){const live=DB.useCases.filter(u=>u.stage==="live").length;
+    return `<div class="pr"><span>Use cases live</span><span>${live}</span></div>
+      <div class="pr"><span>Forecast ROI captured</span><span>${Math.round(DB.roi.tracked/DB.roi.forecast*100)}%</span></div>
+      <div class="pr"><span>Average payback</span><span>${esc(DB.roi.payback)}</span></div>`;}
+  const avgDau=Math.round(DB.teams.reduce((a,t)=>a+dau(t),0)/DB.teams.length);
+  const avgAq=Math.round(DB.teams.reduce((a,t)=>a+t.aq,0)/DB.teams.length);
+  return `<div class="pr"><span>Daily adoption</span><span>${avgDau}%</span></div>
+    <div class="pr"><span>Champions</span><span>${(DB.northStar.find(n=>n.key==="champ")||{value:"—"}).value}%</span></div>
+    <div class="pr"><span>Average SHIFT-AQ</span><span>${avgAq}</span></div>`;
+}
+
+function renderTechnology(){
+  const seats=DB.licenses.reduce((a,l)=>a+l.prov,0);
+  const palette=["--teal","--primary","--violet","--amber","--coral","--green"];
+  const u=DB.usage;
+  const html=`
+  <div class="sec">${secH("Licenses","provisioned against active use")}
+    <div class="grid c21">
+      <div class="card"><h4>Seats activated by platform</h4>
+        <div class="sub">A seat counts as active if used in the last 14 days. The gap is spend not yet turned into adoption.</div>
+        ${DB.licenses.map(l=>bulletRow(l.name, Math.round(l.active/l.prov*100),
+            `${l.active.toLocaleString()} / ${l.prov.toLocaleString()} · ${Math.round(l.active/l.prov*100)}%`,
+            "--primary")).join("")}
+      </div>
+      <div class="card"><h4>License mix</h4><div class="sub">${seats.toLocaleString()} seats provisioned</div>
+        <div class="donutwrap">${donutSVG(DB.licenses.map((l,i)=>({v:l.prov,color:palette[i%palette.length]})),seats)}
+          <div class="legend">${DB.licenses.map((l,i)=>`<div class="li">
+            <span class="sw" style="background:${col(palette[i%palette.length])}"></span>
+            <span class="ln">${esc(l.name)}</span><span class="lv">${l.prov.toLocaleString()}</span></div>`).join("")}</div>
+        </div></div>
+    </div>
+  </div>
+  <div class="sec">${secH("Usage","how deeply tools are used, and by whom")}
+    <div class="grid c4">
+      <div class="card stat"><div class="n">${u.dau}<small>%</small></div><div class="cap">Daily active</div><div class="chg up">▲ 4 pts</div></div>
+      <div class="card stat"><div class="n">${u.wau}<small>%</small></div><div class="cap">Weekly active</div><div class="chg up">▲ 3 pts</div></div>
+      <div class="card stat"><div class="n">${u.perUser}</div><div class="cap">Interactions / user / week</div><div class="chg up">▲ 11%</div></div>
+      <div class="card stat"><div class="n">${u.hours}<small>h</small></div><div class="cap">Hours/week reclaimed (self-report)</div><div class="chg flat">▬ stable</div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><h4>Daily adoption by team</h4>
+      <div class="sub">Click a team to drill in. 80% is the target.</div>${teamBars("dau")}</div>
+  </div>
+  <div class="sec">${secH("Skills, prompts & agents","the build layer the organization is creating")}
+    <div class="grid c3">
+      <div class="card stat"><div class="n">${DB.skills.count}</div><div class="cap">Custom skills published</div><div class="tinynote">${esc(DB.skills.note)}</div></div>
+      <div class="card stat"><div class="n">${DB.prompts.count.toLocaleString()}</div><div class="cap">Prompts in shared library</div><div class="tinynote">${esc(DB.prompts.note)}</div></div>
+      <div class="card stat"><div class="n">${DB.agents.count}</div><div class="cap">Agents in production</div><div class="tinynote">${esc(DB.agents.note)}</div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><h4>Skills & agents created by team</h4>
+      <div class="sub">where reusable capability is accumulating</div>${buildBars()}</div>
+  </div>
+  <div class="sec">${secH("Data foundation","AI is only as good as the data it can reach")}
+    <div class="grid c2">
+      <div class="card"><h4>Data readiness</h4>
+        <div class="sub">share of each priority domain that is governed, documented and reachable by AI</div>
+        ${DB.dataReadiness.map(d=>bulletRow(d.name,d.v,d.v+"%", d.v>=70?"--teal":d.v>=50?"--primary":"--amber")).join("")}
+      </div>
+      <div class="card"><h4>Governance & connections</h4><div class="sub">the guardrails the platform runs on</div>
+        <div class="chips">${DB.governance.map(g=>`<div class="row">${esc(g.k)} <b>${esc(g.v)}</b></div>`).join("")}</div>
+      </div>
+    </div>
+  </div>`;
+  $("#page-technology").innerHTML=html;
+}
+function teamBars(metric){
+  const list=DB.teams;
+  const vals=list.map(t=>metric==="dau"?dau(t):metric==="aq"?t.aq:dau(t));
+  const max=metric==="aq"?100:100;
+  return `<div class="bars">${list.map((t,i)=>{
+    const v=vals[i], h=v/max*100, sel=activeTeam===t.id, dim=activeTeam&&!sel;
+    const c=v>=80?"--teal":v>=55?"--primary":"--amber";
+    return `<div class="bcol ${sel?'sel':''} ${dim?'dim':''}" onclick="selectTeam('${t.id}')">
+      <div class="bwrap"><div class="bar" style="background:${col(c)}" data-h="${h}"><span class="bv">${v}${metric==='aq'?'':'%'}</span></div></div>
+      <div class="bx-lab">${esc(t.name)}</div></div>`;
+  }).join("")}</div>`;
+}
+function buildBars(){
+  const list=DB.teams, max=Math.max(...list.map(t=>t.skills));
+  return `<div class="bars" style="height:165px">${list.map(t=>{
+    const sel=activeTeam===t.id, dim=activeTeam&&!sel;
+    return `<div class="bcol ${sel?'sel':''} ${dim?'dim':''}" onclick="selectTeam('${t.id}')">
+      <div class="bwrap" style="gap:3px;align-items:flex-end">
+        <div class="bar" style="width:13px;background:${cssv('--teal')};height:0" data-h="${t.skills/max*100}"><span class="bv">${t.skills}</span></div>
+        <div class="bar" style="width:13px;background:${cssv('--violet')};height:0" data-h="${t.agents/max*100}"><span class="bv" style="top:-17px">${t.agents}</span></div>
+      </div><div class="bx-lab">${esc(t.name)}</div></div>`;
+  }).join("")}</div>
+  <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:12px;color:var(--muted)">
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${cssv('--teal')};margin-right:6px"></span>Skills</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${cssv('--violet')};margin-right:6px"></span>Agents</span>
+  </div>`;
+}
+
+function renderProcess(){
+  const ucs = activeTeam ? DB.useCases.filter(u=>u.owner===teamById(activeTeam).name) : DB.useCases;
+  const liveUC=DB.useCases.filter(u=>u.stage==="live");
+  const maxRoi=Math.max(...liveUC.flatMap(u=>[u.exp,u.tracked||0]),1);
+  const html=`
+  <div class="sec">${secH("Use case pipeline","intake through to live")}
+    <div class="grid c4">${DB.funnel.map(f=>`
+      <div class="card funnel"><div class="ft"><span class="fn" style="color:${col(f.color)}">${f.v}</span></div>
+        <div class="fl">${esc(f.name)}</div><div class="fbar" style="background:${col(f.color)}"></div></div>`).join("")}
+    </div>
+  </div>
+  <div class="sec">${secH("Portfolio", activeTeam?`owned by ${esc(teamById(activeTeam).name)}`:"internal builds and AVP-sourced use cases")}
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>Use case</th><th>Source</th><th>Stage</th>
+        <th class="num">Cost</th><th class="num">Exp. ROI</th><th class="num">Tracked</th><th>Risk</th><th>Timeline</th></tr></thead>
+      <tbody>${ucs.map(u=>`<tr>
+        <td><div class="tnm">${esc(u.name)}</div><div class="tsub">${esc(u.owner)}</div></td>
+        <td><span class="tag ${u.src==='AVP'?'t-prio':'t-intake'}">${esc(u.src)}</span></td>
+        <td><span class="tag ${tagFor(u.stage)}">${stageName(u.stage)}</span></td>
+        <td class="num">$${u.cost}k</td><td class="num">$${u.exp.toFixed(1)}M</td>
+        <td class="num">${u.tracked!=null?"$"+u.tracked.toFixed(1)+"M":'<span style="color:var(--faint)">—</span>'}</td>
+        <td><span class="tag ${riskTag(u.risk)}">${esc(u.risk)}</span></td>
+        <td style="color:var(--muted)">${esc(u.time)}</td></tr>`).join("")}</tbody>
+    </table></div>
+    <div class="tinynote">ROI is annualized. “AVP” use cases are sourced through Slalom’s AI Value Platform intake and scoring. Tracked ROI fills in once a use case is live.</div>
+    </div>
+  </div>
+  <div class="sec grid c2">
+    <div class="card"><h4>Expected vs tracked ROI</h4><div class="sub">are live use cases delivering what we underwrote?</div>
+      ${liveUC.map(u=>{const ok=(u.tracked||0)>=u.exp;
+        return bulletRow(u.name, (u.tracked||0)/maxRoi*100,
+          `$${(u.tracked||0).toFixed(1)}M / $${u.exp.toFixed(1)}M ${ok?'<span style="color:var(--green)">▲</span>':'<span style="color:var(--coral)">▼</span>'}`,
+          ok?"--teal":"--coral", {target:u.exp/maxRoi*100});}).join("")}
+    </div>
+    <div class="card"><h4>Data modernization dependencies</h4><div class="sub">use cases blocked or enabled by upstream data work</div>
+      <div class="tw"><table><thead><tr><th>Project</th><th>Unblocks</th><th class="num">%</th><th>Status</th></tr></thead>
+        <tbody>${DB.dataMod.map(d=>`<tr><td><div class="tnm" style="font-size:12px">${esc(d.name)}</div></td>
+          <td style="color:var(--muted)">${esc(d.unblocks)}</td><td class="num">${d.pct}%</td>
+          <td><span class="rag rag-${d.st}"></span>${esc(d.label)}</td></tr>`).join("")}</tbody></table></div>
+    </div>
+  </div>`;
+  $("#page-process").innerHTML=html;
+}
+
+function renderPeople(){
+  const champs = activeTeam ? DB.champions.filter(c=>c.team===teamById(activeTeam).name) : DB.champions;
+  const profTotal=DB.proficiency.reduce((a,p)=>a+p.v,0);
+  const champPct=DB.northStar.find(n=>n.key==="champ")||{value:"—",target:5};
+  const builders=[...DB.champions].sort((a,b)=>(b.skills+b.agents)-(a.skills+a.agents)).slice(0,6);
+  const maxB=Math.max(...builders.map(b=>b.skills+b.agents),1);
+  const html=`
+  <div class="sec">${secH("Adoption vs entitlement","paying for a seat is not the same as adoption")}
+    <div class="card"><h4>Licensed against actively adopting, by team</h4>
+      <div class="sub">Click a team to drill in. The amber mark is the 80% target.</div>
+      ${DB.teams.map(t=>bulletRow(t.name, dau(t), `${t.adopting}/${t.licensed} · ${dau(t)}%`,
+          dau(t)>=80?"--teal":dau(t)>=55?"--primary":"--amber",
+          {target:80, click:t.id, dim: activeTeam&&activeTeam!==t.id})).join("")}
+    </div>
+  </div>
+  <div class="sec">${secH("Proficiency","the 80 / 20 capability split")}
+    <div class="grid c3">
+      <div class="card"><h4>Workforce proficiency</h4><div class="sub">target: 80% proficient or above</div>
+        <div class="donutwrap">${donutSVG(DB.proficiency,profTotal)}
+          <div class="legend">${DB.proficiency.map(p=>`<div class="li">
+            <span class="sw" style="background:${col(p.color)}"></span>
+            <span class="ln">${esc(p.name)}</span><span class="lv">${p.v}%</span></div>`).join("")}</div></div></div>
+      <div class="card stat"><h4 style="margin-bottom:12px">Foundational training</h4>
+        <div class="n">${DB.trainedPct}<small>%</small></div><div class="cap">of the workforce has completed it</div><div class="chg up">▲ 7 pts this quarter</div></div>
+      <div class="card stat"><h4 style="margin-bottom:12px">AI Champions</h4>
+        <div class="n">${champPct.value}<small>%</small></div><div class="cap">share of the workforce</div><div class="chg up">target ${champPct.target}%</div></div>
+    </div>
+  </div>
+  <div class="sec">${secH("AI Champions", activeTeam?`on ${esc(teamById(activeTeam).name)}`:"the distributed engine of adoption")}
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>Champion</th><th>Team</th><th class="num">Sessions</th><th class="num">Trained</th>
+        <th class="num">Skills</th><th class="num">Agents</th><th>Impact</th></tr></thead>
+      <tbody>${champs.length?champs.map(c=>`<tr><td class="tnm">${esc(c.name)}</td>
+        <td style="color:var(--muted)">${esc(c.team)}</td><td class="num">${c.sessions}</td>
+        <td class="num">${c.trained}</td><td class="num">${c.skills}</td><td class="num">${c.agents}</td>
+        <td><span class="tag ${c.impact==='Flagship'?'t-live':c.impact==='High'?'t-build':'t-hold'}">${esc(c.impact)}</span></td></tr>`).join("")
+        :`<tr><td colspan="7" style="color:var(--faint)">No champion on this team yet — a recruitment opportunity.</td></tr>`}</tbody>
+    </table></div></div>
+  </div>
+  <div class="sec grid c2">
+    <div class="card"><h4>SHIFT-AQ by team</h4><div class="sub">AI Quotient, 0–100, from the SHIFT assessment. Click to drill in.</div>${teamBars("aq")}</div>
+    <div class="card"><h4>Top builders</h4><div class="sub">skills and agents created, by person</div>
+      <div class="lb">${builders.map((b,i)=>`<div class="lbr">
+        <div class="rk">${i+1}</div>
+        <div class="who">${esc(b.name)}<div class="wt">${esc(b.team)}</div></div>
+        <div><div class="mb"><i style="width:0" data-w="${(b.skills+b.agents)/maxB*100}"></i></div>
+          <div class="ml"><span>${b.skills} skills</span><span>${b.agents} agents</span></div></div></div>`).join("")}</div>
+    </div>
+  </div>`;
+  $("#page-people").innerHTML=html;
+}
+
+/* ============================================================
+   EDIT RENDERERS  (forms per tab)
+   ============================================================ */
+function fld(label,path,type="text",opts){
+  const v=getP(path);
+  if(type==="select"){
+    return `<div class="fld"><label>${label}</label><select class="inp" data-path="${path}">
+      ${opts.map(o=>`<option value="${esc(o.v)}" ${String(v)===String(o.v)?"selected":""}>${esc(o.t)}</option>`).join("")}</select></div>`;
+  }
+  return `<div class="fld"><label>${label}</label>
+    <input class="inp" data-path="${path}" data-num="${type==='number'?1:0}" type="${type==='number'?'number':'text'}"
+      step="any" value="${esc(v==null?'':v)}"></div>`;
+}
+function editCard(title,sub,inner){return `<div class="ecard"><h4>${title}</h4><div class="sub">${sub}</div>${inner}</div>`;}
+
+const teamOpts = ()=>DB.teams.map(t=>({v:t.name,t:t.name}));
+const srcOpts = [{v:"AVP",t:"AVP"},{v:"Internal",t:"Internal"}];
+const stageOpts = [{v:"intake",t:"Intake"},{v:"prio",t:"Prioritized"},{v:"build",t:"In build"},{v:"live",t:"Live"},{v:"hold",t:"On hold"}];
+const riskOpts = [{v:"low",t:"Low"},{v:"med",t:"Medium"},{v:"high",t:"High"}];
+const sevOpts = [{v:"r",t:"Red"},{v:"a",t:"Amber"},{v:"g",t:"Green"}];
+const stOpts = [{v:"g",t:"Green"},{v:"a",t:"Amber"},{v:"r",t:"Red"}];
+const impactOpts=[{v:"Flagship",t:"Flagship"},{v:"High",t:"High"},{v:"Growing",t:"Growing"}];
+const stageNameOpts=()=>DB.stages.map(s=>({v:s.name,t:s.name}));
+
+function eTable(cols, listPath, rowFields, addTemplate){
+  const list=getP(listPath);
+  const head=cols.map(c=>`<th>${c}</th>`).join("")+"<th></th>";
+  const rows=list.map((_,i)=>{
+    const cells=rowFields(i).map(f=>`<td>${f}</td>`).join("");
+    return `<tr>${cells}<td><button class="rowdel" onclick="delRow('${listPath}',${i})" aria-label="Delete row">✕</button></td></tr>`;
+  }).join("");
+  return `<div class="tw"><table class="etable"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>
+    <button class="btn small addrow" onclick='addRow("${listPath}", ${JSON.stringify(addTemplate)})'>+ Add row</button>`;
+}
+function ei(path,type="text",opts){ // edit input shorthand (no label) for tables
+  const v=getP(path);
+  if(type==="select") return `<select class="inp" data-path="${path}">${opts.map(o=>`<option value="${esc(o.v)}" ${String(v)===String(o.v)?"selected":""}>${esc(o.t)}</option>`).join("")}</select>`;
+  return `<input class="inp" data-path="${path}" data-num="${type==='number'?1:0}" type="${type==='number'?'number':'text'}" step="any" value="${esc(v==null?'':v)}">`;
+}
+
+function renderEditPage(p){
+  let html="";
+  if(p==="overview"){
+    html+=`<div class="editbanner"><span>✎</span><div>You’re editing the underlying data — each pillar tab edits its own numbers. <b>Save</b> applies everything to the dashboard and keeps it ${STORAGE_OK?"in this browser":"for this session"}; <b>Download with data</b> bakes it into a file you can publish to GitHub.</div></div>`;
+    html+=editCard("Header & index","the program’s headline numbers",
+      `<div class="egrid" style="grid-template-columns:repeat(2,1fr)">
+        ${fld("Organization","meta.org")}
+        ${fld("Period","meta.period")}
+        ${fld("As of","meta.asOf")}
+        ${fld("Trend note","meta.trend")}
+        ${fld("Transformation index (0–100)","meta.index","number")}
+        ${fld("Current stage","meta.stage","select",stageNameOpts())}
+        ${fld("Journey position % (0–100)","meta.meridianPct","number")}
+      </div>`);
+    html+=editCard("North Star signals","value and target for each",
+      eTable(["Signal","Value","Target","Unit","Display (optional)","Target display"],"northStar",
+        i=>[ei(`northStar.${i}.label`),ei(`northStar.${i}.value`,"number"),ei(`northStar.${i}.target`,"number"),
+            ei(`northStar.${i}.unit`),ei(`northStar.${i}.display`),ei(`northStar.${i}.targetDisplay`)],
+        {key:"new",label:"New signal",value:0,target:100,unit:"%",color:"--primary"}));
+    html+=editCard("Pillar scores","composite 0–100 per pillar",
+      eTable(["Pillar","Score"],"pillars",
+        i=>[ei(`pillars.${i}.name`),ei(`pillars.${i}.score`,"number")], {name:"New pillar",score:50,color:"--primary"}));
+    html+=editCard("Value realized","ROI rollup shown on the overview",
+      `<div class="egrid" style="grid-template-columns:repeat(2,1fr)">
+        ${fld("Tracked ROI ($M)","roi.tracked","number")}
+        ${fld("Forecast ROI ($M)","roi.forecast","number")}
+        ${fld("Live use cases","roi.live","number")}
+        ${fld("In build","roi.build","number")}
+        ${fld("Average payback","roi.payback")}
+      </div>`);
+    html+=editCard("Adoption trend","12 monthly values, comma separated",
+      `<div class="fld"><input class="inp" id="trendInput" value="${DB.adoptionTrend.join(", ")}"></div>`);
+    html+=editCard("Needs attention","severity, title and detail",
+      eTable(["Severity","Title","Detail"],"attention",
+        i=>[ei(`attention.${i}.sev`,"select",sevOpts),ei(`attention.${i}.title`),ei(`attention.${i}.detail`)],
+        {sev:"a",title:"New item",detail:""}));
+  }
+  if(p==="technology"){
+    html+=editCard("Teams","the master team list — drives adoption, AQ, skills, agents and drill-downs across the dashboard",
+      eTable(["Team","Licensed","Adopting","SHIFT-AQ","Trained %","Champs","Skills","Agents"],"teams",
+        i=>[ei(`teams.${i}.name`),ei(`teams.${i}.licensed`,"number"),ei(`teams.${i}.adopting`,"number"),
+            ei(`teams.${i}.aq`,"number"),ei(`teams.${i}.trained`,"number"),ei(`teams.${i}.champions`,"number"),
+            ei(`teams.${i}.skills`,"number"),ei(`teams.${i}.agents`,"number")],
+        {id:"t"+Date.now(),name:"New team",licensed:0,adopting:0,aq:50,trained:0,champions:0,skills:0,agents:0}));
+    html+=editCard("Licenses","provisioned and active seats by platform",
+      eTable(["Platform","Provisioned","Active"],"licenses",
+        i=>[ei(`licenses.${i}.name`),ei(`licenses.${i}.prov`,"number"),ei(`licenses.${i}.active`,"number")],
+        {name:"New platform",prov:0,active:0}));
+    html+=editCard("Usage headline numbers","",
+      `<div class="egrid" style="grid-template-columns:repeat(4,1fr)">
+        ${fld("Daily active %","usage.dau","number")}${fld("Weekly active %","usage.wau","number")}
+        ${fld("Interactions/user/wk","usage.perUser","number")}${fld("Hours reclaimed/wk","usage.hours","number")}
+      </div>`);
+    html+=editCard("Build layer","skills, prompts and agents totals",
+      `<div class="egrid" style="grid-template-columns:repeat(2,1fr)">
+        ${fld("Skills published","skills.count","number")}${fld("Skills note","skills.note")}
+        ${fld("Prompts in library","prompts.count","number")}${fld("Prompts note","prompts.note")}
+        ${fld("Agents in production","agents.count","number")}${fld("Agents note","agents.note")}
+      </div>`);
+    html+=editCard("Data readiness","percent ready per domain",
+      eTable(["Domain","Ready %"],"dataReadiness", i=>[ei(`dataReadiness.${i}.name`),ei(`dataReadiness.${i}.v`,"number")],
+        {name:"New domain",v:0}));
+    html+=editCard("Governance & connections","label and value",
+      eTable(["Metric","Value"],"governance", i=>[ei(`governance.${i}.k`),ei(`governance.${i}.v`)],{k:"New metric",v:""}));
+  }
+  if(p==="process"){
+    html+=editCard("Pipeline funnel","count at each stage",
+      eTable(["Stage","Count"],"funnel", i=>[ei(`funnel.${i}.name`),ei(`funnel.${i}.v`,"number")],{name:"New stage",v:0,color:"--muted"}));
+    html+=editCard("Use case portfolio","leave Tracked blank until a use case is live",
+      eTable(["Use case","Owner","Source","Stage","Cost $k","Exp ROI $M","Tracked $M","Risk","Timeline"],"useCases",
+        i=>[ei(`useCases.${i}.name`),ei(`useCases.${i}.owner`,"select",teamOpts()),ei(`useCases.${i}.src`,"select",srcOpts),
+            ei(`useCases.${i}.stage`,"select",stageOpts),ei(`useCases.${i}.cost`,"number"),ei(`useCases.${i}.exp`,"number"),
+            ei(`useCases.${i}.tracked`,"number"),ei(`useCases.${i}.risk`,"select",riskOpts),ei(`useCases.${i}.time`)],
+        {name:"New use case",owner:DB.teams[0]?.name||"",src:"Internal",stage:"intake",cost:0,exp:0,tracked:null,risk:"low",time:""}));
+    html+=editCard("Data modernization","upstream projects and status",
+      eTable(["Project","Unblocks","%","Status","Label"],"dataMod",
+        i=>[ei(`dataMod.${i}.name`),ei(`dataMod.${i}.unblocks`),ei(`dataMod.${i}.pct`,"number"),
+            ei(`dataMod.${i}.st`,"select",stOpts),ei(`dataMod.${i}.label`)],
+        {name:"New project",unblocks:"",pct:0,st:"a",label:""}));
+  }
+  if(p==="people"){
+    html+=editCard("Proficiency split","must add up to 100",
+      eTable(["Band","%"],"proficiency", i=>[ei(`proficiency.${i}.name`),ei(`proficiency.${i}.v`,"number")],{name:"New band",v:0,color:"--faint"}));
+    html+=editCard("Training","",`<div class="egrid">${fld("Workforce trained %","trainedPct","number")}</div>`);
+    html+=editCard("AI Champions roster","",
+      eTable(["Name","Team","Sessions","Trained","Skills","Agents","Impact"],"champions",
+        i=>[ei(`champions.${i}.name`),ei(`champions.${i}.team`,"select",teamOpts()),ei(`champions.${i}.sessions`,"number"),
+            ei(`champions.${i}.trained`,"number"),ei(`champions.${i}.skills`,"number"),ei(`champions.${i}.agents`,"number"),
+            ei(`champions.${i}.impact`,"select",impactOpts)],
+        {name:"New champion",team:DB.teams[0]?.name||"",sessions:0,trained:0,skills:0,agents:0,impact:"Growing"}));
+    html+=`<div class="ecard"><h4 style="margin-bottom:3px">Note</h4><div class="sub" style="margin:0">Per-team adoption, SHIFT-AQ and skills/agents are driven by the <b>Teams</b> table on the Technology tab.</div></div>`;
+  }
+  $("#page-"+p).innerHTML=html;
+  bindEditInputs();
+}
+
+function bindEditInputs(){
+  document.querySelectorAll("#page-"+page+" .inp[data-path]").forEach(el=>{
+    el.addEventListener("input",()=>{
+      let v=el.value;
+      if(el.dataset.num==="1") v = v===""?null:Number(v);
+      setP(el.dataset.path, v);
+    });
+  });
+  const trend=$("#trendInput");
+  if(trend) trend.addEventListener("input",()=>{ DB.adoptionTrend=trend.value.split(",").map(x=>Number(x.trim())).filter(x=>!isNaN(x)); });
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+window.selectTeam=function(id){ activeTeam=id; if(!editing){ renderTop(); renderTeamProfile(); renderPage(); } 
+  $("#teamSel").value=id||"all"; };
+window.delRow=function(listPath,i){ getP(listPath).splice(i,1); renderEditPage(page); };
+window.addRow=function(listPath,tpl){ getP(listPath).push(clone(tpl)); renderEditPage(page); };
+
+function renderPage(){
+  if(editing){ renderEditPage(page); return; }
+  if(page==="overview") renderOverview();
+  if(page==="technology") renderTechnology();
+  if(page==="process") renderProcess();
+  if(page==="people") renderPeople();
+  requestAnimationFrame(()=>setTimeout(animate,70));
+}
+function renderAll(){ renderTop(); renderLadder(); renderMeters(); renderTeamProfile(); renderPage(); renderFooter();
+  requestAnimationFrame(()=>setTimeout(animate,90)); }
+
+function animate(){
+  document.querySelectorAll(".mfill[data-w]").forEach(e=>e.style.width=e.dataset.w+"%");
+  document.querySelectorAll(".bf[data-w]").forEach(e=>e.style.width=e.dataset.w+"%");
+  document.querySelectorAll(".bar[data-h]").forEach(e=>e.style.height=e.dataset.h+"%");
+  document.querySelectorAll(".lbr .mb i[data-w]").forEach(e=>e.style.width=e.dataset.w+"%");
+}
+
+function setPage(p){
+  page=p;
+  document.querySelectorAll(".navitem").forEach(n=>n.setAttribute("aria-current", n.dataset.page===p?"true":"false"));
+  document.querySelectorAll(".page").forEach(pg=>pg.classList.remove("active"));
+  $("#page-"+p).classList.add("active");
+  renderPage();
+  $("#side").classList.remove("open");
+  window.scrollTo({top:0});
+}
+
+function enterEdit(){
+  editing=true; snapshot=clone(DB); activeTeam=null; $("#teamSel").value="all";
+  $("#editBtn").textContent="Editing…"; $("#editBtn").disabled=true;
+  renderTop(); renderTeamProfile(); renderMeters(); renderLadder();
+  renderEditPage(page);
+  if(!$("#editbar")){
+    const bar=document.createElement("div"); bar.className="editbar"; bar.id="editbar";
+    bar.innerHTML=`<span class="msg">Editing data. Save to apply your changes to the dashboard.</span>
+      <button class="btn danger" id="resetBtn">Reset to sample</button>
+      <button class="btn" id="cancelBtn">Cancel</button>
+      <button class="btn primary" id="saveBtn">Save changes</button>`;
+    $(".main").appendChild(bar);
+    $("#saveBtn").onclick=saveEdit; $("#cancelBtn").onclick=cancelEdit; $("#resetBtn").onclick=resetData;
+  }
+}
+function exitEdit(){
+  editing=false; $("#editBtn").textContent="Edit data"; $("#editBtn").disabled=false;
+  const bar=$("#editbar"); if(bar) bar.remove();
+  renderAll();
+}
+function saveEdit(){ const ok=saveLS(DB); exitEdit();
+  toast(ok?"Saved to this browser.":"Saved for this session. Use “Download with data” to keep it permanently."); }
+function cancelEdit(){ DB=snapshot; exitEdit(); }
+function resetData(){ if(confirm("Replace all data with the original sample set?")){ DB=clone(DEFAULT_DATA); saveLS(DB);
+  if(editing) renderEditPage(page); else renderAll(); toast("Reset to sample data."); } }
+
+function renderFooter(){
+  $("#footer").innerHTML=`<b>Illustrative data.</b> Use <b>Edit data</b> to replace the numbers with your own — the dashboard redraws from what you enter. Edits save ${STORAGE_OK?"to this browser automatically":"for the current session"}; <b>Download with data</b> bakes them into a standalone <span class="mono">index.html</span> you can publish to GitHub Pages. <b>Confidentiality:</b> a public page exposes its data to anyone with the link, so keep real figures on a private or SSO-gated host.`;
+}
+
+/* export / import / bake */
+function download(name,content,type){
+  const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportJSON(){ download("ai-transformation-data.json", JSON.stringify(DB,null,2), "application/json"); }
+function importJSON(file){ const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result); DB=d; saveLS(DB); if(editing){cancelEdit();} renderAll(); toast("Data imported."); }
+    catch(e){ toast("That file isn’t valid JSON."); } };
+  r.readAsText(file); }
+function bakeHTML(){
+  const b64=btoa(unescape(encodeURIComponent(JSON.stringify(DB))));
+  let html=ORIGINAL_HTML.replace(/<script>window\.__SEED__=[^]*?<\/script>\s*/,"");
+  const seed=`<script>window.__SEED__=${JSON.stringify(b64)};<\/script>\n`;
+  html=html.replace("</head>", seed+"</head>");
+  download("index.html", html, "text/html");
+  toast("Downloaded index.html with your data baked in.");
+}
+
+/* tiny toast */
+let toastTimer;
+function toast(msg){
+  let t=$("#toast"); if(!t){ t=document.createElement("div"); t.id="toast";
+    t.style.cssText="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;"+
+      "padding:10px 16px;border-radius:10px;font-size:13px;z-index:100;box-shadow:var(--shadow);max-width:90vw;text-align:center";
+    document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity="1";
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.style.opacity="0",2600);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function initTeamSelect(){
+  const sel=$("#teamSel");
+  sel.innerHTML=`<option value="all">All teams</option>`+DB.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("");
+  sel.value=activeTeam||"all";
+  sel.onchange=()=>selectTeam(sel.value==="all"?null:sel.value);
+}
+document.querySelectorAll(".navitem").forEach(n=>n.onclick=()=>setPage(n.dataset.page));
+$("#editBtn").onclick=enterEdit;
+$("#exportBtn").onclick=exportJSON;
+$("#importBtn").onclick=()=>$("#importFile").click();
+$("#importFile").onchange=e=>{ if(e.target.files[0]) importJSON(e.target.files[0]); e.target.value=""; };
+$("#bakeBtn").onclick=bakeHTML;
+$("#menuToggle").onclick=()=>$("#side").classList.toggle("open");
+
+initTeamSelect();
+renderAll();
+</script>
+</body>
+</html>
